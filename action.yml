@@ -1,13 +1,15 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: 'Airtable package version parser'
+description: 'Pass all required composer packages (and their versions) to Airtable'
 inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
+  apiKey:
+    description: ApiToken or Personal Access Token from Airtable
     required: true
-    default: '1000'
-outputs:
-  time: # output will be available to future steps
-    description: 'The current time after waiting'
+  base:
+    description: Airtable base
+    required: true
+  site:
+    description: Human description of the current repo/project
+    required: true
 runs:
   using: 'node16'
   main: 'dist/index.js'
