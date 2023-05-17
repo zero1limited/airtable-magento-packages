@@ -1,5 +1,5 @@
 const core = require('@actions/core');
-const { promises: fs } = require('fs');
+const fs = require('fs');
 const Airtable = require('airtable');
 
 const COMPOSER_LOCK = 'composer.lock';
@@ -93,7 +93,7 @@ async function run() {
             });
         }
     });
-    
+
   } catch (error) {
     core.setFailed(error.message);
   }

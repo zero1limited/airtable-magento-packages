@@ -12171,7 +12171,7 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(2186);
-const { promises: fs } = __nccwpck_require__(7147);
+const fs = __nccwpck_require__(7147);
 const Airtable = __nccwpck_require__(2451);
 
 const COMPOSER_LOCK = 'composer.lock';
@@ -12265,7 +12265,7 @@ async function run() {
             });
         }
     });
-    
+
   } catch (error) {
     core.setFailed(error.message);
   }
