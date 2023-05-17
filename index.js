@@ -12,28 +12,13 @@ async function run() {
     const base = core.getInput('base');
     const site = core.getInput('site');
 
-    if(!apiKey){
-      throw new Error('"apiKey" not provided');
-    }
-    if(!base){
-      throw new Error('"base" not provided');
-    }
-    if(!site){
-      throw new Error('"site" not provided');
-    }
-
-    console.log('eh?', {
-      site,
-      apiKey,
-      base
-    });
     Airtable.configure({ apiKey: apiKey });
     var airtable = new Airtable().base(base);
 
     var airTableVersions = {};
     var composerLockVersions = {};
 
-    await airtable('Versions').select({
+    airtable('Versions').select({
         filterByFormula: `{Site} = '${site}'`
     }).eachPage(function page(records, fetchNextPage) {
     
@@ -46,10 +31,69 @@ async function run() {
     }, function done(err) {
         if (err) { console.error(err); return; }
         console.log('airtable record count: %d', Object.keys(airTableVersions).length);
+
+        var upserts = [];
+        let composerLock = JSON.parse(fs.readFileSync('composer.lock'));
+        for (var x=0; x < composerLock['packages'].length; x++){
+            let package = composerLock['packages'][x];
+            composerLockVersions[package.name] = package.version;
+
+            if(airTableVersions[package.name]){
+                if(airTableVersions[package.name].get('Version') != package.version){
+                    upserts.push({
+                        id: airTableVersions[package.name].getId(),
+                        fields: {
+                            Version: package.version
+                        }
+                    });
+                }
+            }else{
+                upserts.push({
+                    fields: {
+                        Site: `${site}`,
+                        Package: package.name,
+                        Version: package.version
+                    }
+                });
+            }
+        }
+
+        // values that need deleting
+        let difference = Object.keys(airTableVersions).filter(x => !Object.keys(composerLockVersions).includes(x));
+        console.log('%d records to delete', difference.length);
+        if(difference.length > 0){
+            let deletes = [];
+            for(var x = 0; x < difference.length; x++){
+                deletes.push(airTableVersions[difference[x]].getId());
+            }
+            // console.log(difference);
+            // console.log(deletes);
+            for (let i = 0; i < deletes.length; i += chunkSize) {
+                const chunk = deletes.slice(i, i + chunkSize);
+                console.log('deleting %d => %d', i, i + chunkSize);
+                airtable('Versions').destroy(chunk, function(err, deletedRecords) {
+                    if (err) {
+                      console.error(err);
+                      return;
+                    }
+                });
+            }
+        }
+
+        // add everything else
+        console.log('%d records to update', upserts.length);
+        for (let i = 0; i < upserts.length; i += chunkSize) {
+            const chunk = upserts.slice(i, i + chunkSize);
+            console.log('updating %d => %d', i, i + chunkSize);
+            airtable('Versions').create(chunk, {typecast: true}, function(err, records) {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
+            });
+        }
     });
-
-    console.log('yo', {foo: Object.keys(airTableVersions).length});
-
+    
   } catch (error) {
     core.setFailed(error.message);
   }
