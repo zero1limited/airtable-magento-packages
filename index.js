@@ -22,15 +22,29 @@ async function run() {
       throw new Error('"site" not provided');
     }
 
+    Airtable.configure({ apiKey })
+    var airtable = new Airtable().base(base);
 
-    const ms = core.getInput('milliseconds');
-    core.info(`Waiting ${ms} milliseconds ...`);
+    var airTableVersions = {};
+    var composerLockVersions = {};
 
-    core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-    await wait(parseInt(ms));
-    core.info((new Date()).toTimeString());
+    await airtable('Versions').select({
+        filterByFormula: `{Site} = '${site}'`
+    }).eachPage(function page(records, fetchNextPage) {
+    
+        records.forEach(function(record) {
+            airTableVersions[record.get('Package')] = record;
+        });
 
-    core.setOutput('time', new Date().toTimeString());
+        fetchNextPage();
+    
+    }, function done(err) {
+        if (err) { console.error(err); return; }
+        console.log('airtable record count: %d', Object.keys(airTableVersions).length);
+    });
+
+    console.log('yo', {foo: Object.keys(airTableVersions).length});
+
   } catch (error) {
     core.setFailed(error.message);
   }
