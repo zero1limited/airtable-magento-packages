@@ -12241,17 +12241,15 @@ async function run() {
         let difference = Object.keys(airTableVersions).filter(x => !Object.keys(composerLockVersions).includes(x));
         console.log('%d records to delete', difference.length);
         if(difference.length > 0){
-          console.log('aaa');
-            let deletes = [];
+            var deletes = [];
             for(var x = 0; x < difference.length; x++){
-              console.log('aa1a');
                 deletes.push(airTableVersions[difference[x]].getId());
             }
             console.debug(difference);
             console.debug(deletes);
-            for (let i = 0; i < deletes.length; i += chunkSize) {
-                const chunk = deletes.slice(i, i + chunkSize);
-                console.log('deleting %d => %d', i, i + chunkSize);
+            for (let i = 0; i < deletes.length; i += AIRTABLE_MAX_CHUNK) {
+                const chunk = deletes.slice(i, i + AIRTABLE_MAX_CHUNK);
+                console.log('deleting %d => %d', i, i + AIRTABLE_MAX_CHUNK);
                 airtable('Versions').destroy(chunk, function(err, deletedRecords) {
                     if (err) {
                       console.error(err);
@@ -12266,9 +12264,9 @@ async function run() {
         console.log('adddddddaa');
         // add everything else
         console.log('%d records to update', upserts.length);
-        for (let i = 0; i < upserts.length; i += chunkSize) {
-            const chunk = upserts.slice(i, i + chunkSize);
-            console.log('updating %d => %d', i, i + chunkSize);
+        for (let i = 0; i < upserts.length; i += AIRTABLE_MAX_CHUNK) {
+            const chunk = upserts.slice(i, i + AIRTABLE_MAX_CHUNK);
+            console.log('updating %d => %d', i, i + AIRTABLE_MAX_CHUNK);
             airtable('Versions').create(chunk, {typecast: true}, function(err, records) {
                 if (err) {
                   console.error(err);
@@ -12283,7 +12281,7 @@ async function run() {
   }
 }
 
-run();
+run().catch(err => core.setFailed(err.message));
 
 })();
 
