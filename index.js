@@ -32,10 +32,14 @@ async function run() {
         if (err) { console.error(err); return; }
         console.log('airtable record count: %d', Object.keys(airTableVersions).length);
 
+        console.log('aa');
         var upserts = [];
+        console.log('ab');
         if(!fs.fileExists(`${COMPOSER_LOCK}`)){
+          console.log('ca');
             throw new Error(`Unable to find ${COMPOSER_LOCK}`);
         }
+        console.log('da');
         let composerLock = JSON.parse(fs.readFileSync(`${COMPOSER_LOCK}`));
         console.log('composerLock', {composerLock});
         for (var x=0; x < composerLock['packages'].length; x++){
