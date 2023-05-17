@@ -37,10 +37,12 @@ async function run() {
             throw new Error(`Unable to find ${COMPOSER_LOCK}`);
         }
         let composerLock = JSON.parse(fs.readFileSync(`${COMPOSER_LOCK}`));
+        console.log('composerLock', {composerLock});
         for (var x=0; x < composerLock['packages'].length; x++){
             let package = composerLock['packages'][x];
             composerLockVersions[package.name] = package.version;
 
+            console.log('a');
             if(airTableVersions[package.name]){
                 if(airTableVersions[package.name].get('Version') != package.version){
                     upserts.push({
@@ -59,6 +61,7 @@ async function run() {
                     }
                 });
             }
+            console.log('b');
         }
 
         // values that need deleting
