@@ -12205,7 +12205,10 @@ async function run() {
         console.log('airtable record count: %d', Object.keys(airTableVersions).length);
 
         var upserts = [];
-        let composerLock = JSON.parse(fs.readFileSync('composer.lock'));
+        if(!fs.fileExists(`${COMPOSER_LOCK}`)){
+            throw new Error(`Unable to find ${COMPOSER_LOCK}`);
+        }
+        let composerLock = JSON.parse(fs.readFileSync(`${COMPOSER_LOCK}`));
         for (var x=0; x < composerLock['packages'].length; x++){
             let package = composerLock['packages'][x];
             composerLockVersions[package.name] = package.version;
@@ -12238,8 +12241,8 @@ async function run() {
             for(var x = 0; x < difference.length; x++){
                 deletes.push(airTableVersions[difference[x]].getId());
             }
-            // console.log(difference);
-            // console.log(deletes);
+            console.debug(difference);
+            console.debug(deletes);
             for (let i = 0; i < deletes.length; i += chunkSize) {
                 const chunk = deletes.slice(i, i + chunkSize);
                 console.log('deleting %d => %d', i, i + chunkSize);
