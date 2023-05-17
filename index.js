@@ -35,7 +35,7 @@ async function run() {
         console.log('aa');
         var upserts = [];
         console.log('ab');
-        if(!fs.fileExists(`${COMPOSER_LOCK}`)){
+        if(!fs.existsSync(`${COMPOSER_LOCK}`)){
           console.log('ca');
             throw new Error(`Unable to find ${COMPOSER_LOCK}`);
         }
