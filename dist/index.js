@@ -12194,7 +12194,12 @@ async function run() {
       throw new Error('"site" not provided');
     }
 
-    Airtable.configure({ apiKey })
+    console.log('eh?', {
+      site,
+      apiKey,
+      base
+    });
+    Airtable.configure({ apiKey: apiKey });
     var airtable = new Airtable().base(base);
 
     var airTableVersions = {};
