@@ -41,12 +41,10 @@ async function run() {
         }
         console.log('da');
         let composerLock = JSON.parse(fs.readFileSync(`${COMPOSER_LOCK}`));
-        console.log('composerLock', {composerLock});
         for (var x=0; x < composerLock['packages'].length; x++){
             let package = composerLock['packages'][x];
             composerLockVersions[package.name] = package.version;
 
-            console.log('a');
             if(airTableVersions[package.name]){
                 if(airTableVersions[package.name].get('Version') != package.version){
                     upserts.push({
@@ -65,15 +63,16 @@ async function run() {
                     }
                 });
             }
-            console.log('b');
         }
 
         // values that need deleting
         let difference = Object.keys(airTableVersions).filter(x => !Object.keys(composerLockVersions).includes(x));
         console.log('%d records to delete', difference.length);
         if(difference.length > 0){
+          console.log('aaa');
             let deletes = [];
             for(var x = 0; x < difference.length; x++){
+              console.log('aa1a');
                 deletes.push(airTableVersions[difference[x]].getId());
             }
             console.debug(difference);
@@ -86,10 +85,13 @@ async function run() {
                       console.error(err);
                       return;
                     }
+                    console.log('aafffa');
                 });
             }
+            console.log('aacca');
         }
 
+        console.log('adddddddaa');
         // add everything else
         console.log('%d records to update', upserts.length);
         for (let i = 0; i < upserts.length; i += chunkSize) {
