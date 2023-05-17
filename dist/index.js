@@ -12204,14 +12204,10 @@ async function run() {
         if (err) { console.error(err); return; }
         console.log('airtable record count: %d', Object.keys(airTableVersions).length);
 
-        console.log('aa');
         var upserts = [];
-        console.log('ab');
         if(!fs.existsSync(`${COMPOSER_LOCK}`)){
-          console.log('ca');
             throw new Error(`Unable to find ${COMPOSER_LOCK}`);
         }
-        console.log('da');
         let composerLock = JSON.parse(fs.readFileSync(`${COMPOSER_LOCK}`));
         for (var x=0; x < composerLock['packages'].length; x++){
             let package = composerLock['packages'][x];
@@ -12255,13 +12251,10 @@ async function run() {
                       console.error(err);
                       return;
                     }
-                    console.log('aafffa');
                 });
             }
-            console.log('aacca');
         }
 
-        console.log('adddddddaa');
         // add everything else
         console.log('%d records to update', upserts.length);
         for (let i = 0; i < upserts.length; i += AIRTABLE_MAX_CHUNK) {
