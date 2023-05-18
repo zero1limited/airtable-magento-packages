@@ -12175,6 +12175,7 @@ const fs = __nccwpck_require__(7147);
 const Airtable = __nccwpck_require__(2451);
 
 const COMPOSER_LOCK = 'composer.lock';
+const COMPOSER_JSON = 'composer.json';
 const AIRTABLE_MAX_CHUNK = 10;
 
 // most @actions toolkit packages have async methods
@@ -12209,8 +12210,19 @@ async function run() {
             throw new Error(`Unable to find ${COMPOSER_LOCK}`);
         }
         let composerLock = JSON.parse(fs.readFileSync(`${COMPOSER_LOCK}`));
+        if(!fs.existsSync(`${COMPOSER_JSON}`)){
+            throw new Error(`Unable to find ${COMPOSER_JSON}`);
+        }
+        let composerJson = JSON.parse(fs.readFileSync(`${COMPOSER_JSON}`));
+
         for (var x=0; x < composerLock['packages'].length; x++){
             let package = composerLock['packages'][x];
+
+            // restrict to packages declared in root composer
+            if(!composerJson['require'][package.name]){
+                continue;
+            }
+
             composerLockVersions[package.name] = package.version;
 
             if(airTableVersions[package.name]){

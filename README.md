@@ -42,3 +42,7 @@ jobs:
   - `Version` (any text type)
   (other columns will not be touched, though the row will be removed if the package is no longer installed)
 
+## Building a release
+1. `npm run prepare`
+2. `git add dist`
+3. push
