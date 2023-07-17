@@ -97,10 +97,11 @@ async function run() {
 
         // add everything else
         console.log('%d records to update', upserts.length);
-        console.debug('upserts', {upserts});
+        console.log('upserts', {upserts});
         for (let i = 0; i < upserts.length; i += AIRTABLE_MAX_CHUNK) {
             const chunk = upserts.slice(i, i + AIRTABLE_MAX_CHUNK);
             console.log('updating %d => %d', i, i + AIRTABLE_MAX_CHUNK);
+          console.log('chunk', {chunk});
             airtable('Versions').update(chunk, {typecast: true}, function(err, records) {
                 if (err) {
                   console.error(err);
