@@ -46,3 +46,9 @@ jobs:
 1. `npm run prepare`
 2. `git add dist`
 3. push
+
+## Testing / Development
+1. `npm ci`
+2. create `composer.json` and `composer.lock`
+3. `npm run debug -- --apiKey=XXXXX --base=YYYYY --site=ZZZZZ`
+  

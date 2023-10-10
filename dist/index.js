@@ -12205,13 +12205,16 @@ async function run() {
         if (err) { console.error(err); return; }
         console.log('airtable record count: %d', Object.keys(airTableVersions).length);
 
-        var upserts = [];
+        var updates = [];
+        var additions = [];
         if(!fs.existsSync(`${COMPOSER_LOCK}`)){
-            throw new Error(`Unable to find ${COMPOSER_LOCK}`);
+            console.error(`Error: Unable to find ${COMPOSER_LOCK}`);
+            return;
         }
         let composerLock = JSON.parse(fs.readFileSync(`${COMPOSER_LOCK}`));
         if(!fs.existsSync(`${COMPOSER_JSON}`)){
-            throw new Error(`Unable to find ${COMPOSER_JSON}`);
+            console.error(`Error: Unable to find ${COMPOSER_JSON}`);
+            return;
         }
         let composerJson = JSON.parse(fs.readFileSync(`${COMPOSER_JSON}`));
 
@@ -12227,7 +12230,7 @@ async function run() {
 
             if(airTableVersions[package.name]){
                 if(airTableVersions[package.name].get('Version') != package.version){
-                    upserts.push({
+                    updates.push({
                         id: airTableVersions[package.name].getId(),
                         fields: {
                             Version: package.version
@@ -12235,7 +12238,7 @@ async function run() {
                     });
                 }
             }else{
-                upserts.push({
+                additions.push({
                     fields: {
                         Site: `${site}`,
                         Package: package.name,
@@ -12267,11 +12270,28 @@ async function run() {
             }
         }
 
-        // add everything else
-        console.log('%d records to update', upserts.length);
-        for (let i = 0; i < upserts.length; i += AIRTABLE_MAX_CHUNK) {
-            const chunk = upserts.slice(i, i + AIRTABLE_MAX_CHUNK);
+        // run updates
+        console.log('%d records to update', updates.length);
+        console.log('updates', {updates});
+        for (let i = 0; i < updates.length; i += AIRTABLE_MAX_CHUNK) {
+            const chunk = updates.slice(i, i + AIRTABLE_MAX_CHUNK);
             console.log('updating %d => %d', i, i + AIRTABLE_MAX_CHUNK);
+            console.log('chunk', {chunk});
+            airtable('Versions').update(chunk, {typecast: true}, function(err, records) {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
+            });
+        }
+
+        // run additions
+        console.log('%d records to add', additions.length);
+        console.log('additions', {additions});
+        for (let i = 0; i < additions.length; i += AIRTABLE_MAX_CHUNK) {
+            const chunk = additions.slice(i, i + AIRTABLE_MAX_CHUNK);
+            console.log('updating %d => %d', i, i + AIRTABLE_MAX_CHUNK);
+            console.log('chunk', {chunk});
             airtable('Versions').create(chunk, {typecast: true}, function(err, records) {
                 if (err) {
                   console.error(err);
@@ -12282,6 +12302,7 @@ async function run() {
     });
 
   } catch (error) {
+    console.log('AAAAAA');
     core.setFailed(error.message);
   }
 }
